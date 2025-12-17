@@ -1,0 +1,12 @@
+.product-card {
+    transition: transform 0.3s;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.product-card:hover {
+    transform: translateY(-5px);
+}
+.add-to-cart {
+    background: linear-gradient(45deg, #ff6b6b, #feca57);
+    border: none;
+}
