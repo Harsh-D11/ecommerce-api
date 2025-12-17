@@ -1,0 +1,22 @@
+name: E-commerce API CI/CD
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - run: pip install -r requirements.txt
+    - run: python -m pytest test_api.py -v
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: docker build -t ecommerce-api .
+    - run: |
+        docker run -d -p 5000:5000 ecommerce-api
+        sleep 5
+        curl http://localhost:5000/api/health
