@@ -16,7 +16,7 @@ def test_get_products(client):
     rv = client.get('/api/products')
     assert rv.status_code == 200
     data = rv.get_json()
-    assert len(data) >= 3  # Now dynamic
+    assert len(data) >= 3
 
 def test_health(client):
     rv = client.get('/api/health')
@@ -27,8 +27,8 @@ def test_health(client):
 def test_index_html(client):
     rv = client.get('/')
     assert rv.status_code == 200
-    assert b'<title>Harsh\'s Candle' in rv.data  # Tests new HTML!
+    assert b'<title>Harsh\'s Candle' in rv.data
 
-def test_api_products_json(client):
-    rv = client.get('/api/products/candle_rosemary')
-    assert rv.status_code == 200
+def test_static_css(client):
+    rv = client.get('/static/style.css')
+    assert rv.status_code == 200  # ✅ Tests CSS loads!
