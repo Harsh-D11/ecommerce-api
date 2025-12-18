@@ -56,3 +56,16 @@ fetch('/api/products')
     .then(function(r) { return r.json(); })
     .then(loadProducts)
     .catch(function(e) { console.error('Load failed:', e); });
+// Add at bottom
+function checkout() {
+    const cartCount = document.getElementById('cart-count').textContent;
+    if (cartCount == '0') return alert('Cart empty!');
+    
+    const pincode = prompt('Enter PINCODE (226001 Lucknow):');
+    if (!pincode || pincode.length !== 6) return alert('Valid PIN required');
+    
+    alert(`Order placed! 🚚 Shipping to ${pincode}\nTotal items: ${cartCount}`);
+    localStorage.clear(); // Clear cart
+    updateCartCount();
+}
+
