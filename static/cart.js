@@ -35,7 +35,7 @@ function addToCart(id) {
     cart[id]++;
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
-    alert('Added to cart!');
+    alert('Added to cart! 🛍️');
 }
 
 function updateCartCount() {
@@ -48,7 +48,24 @@ function updateCartCount() {
 }
 
 function buyNow(id) {
-    alert('Buy Now clicked! 💳 Razorpay ready');
+    alert('Buy Now clicked! 💳 Razorpay coming soon');
+}
+
+function checkout() {
+    const cartCount = document.getElementById('cart-count').textContent;
+    if (cartCount == '0') return alert('🛒 Cart is empty!');
+    
+    const pincode = prompt('Enter PINCODE for delivery (226001 Lucknow):');
+    if (!pincode || pincode.length !== 6) {
+        return alert('❌ Valid 6-digit PINCODE required');
+    }
+    
+    const total = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+    alert(`✅ Order placed successfully!\n\n📦 Items: ${total}\n🚚 Shipping to: ${pincode}\n💰 Payment: Razorpay\n⏱️ ETA: 2-3 days`);
+    
+    localStorage.setItem('cart', JSON.stringify({})); // Clear cart
+    updateCartCount();
+    location.reload();
 }
 
 // Load products
@@ -56,16 +73,3 @@ fetch('/api/products')
     .then(function(r) { return r.json(); })
     .then(loadProducts)
     .catch(function(e) { console.error('Load failed:', e); });
-// Add at bottom
-function checkout() {
-    const cartCount = document.getElementById('cart-count').textContent;
-    if (cartCount == '0') return alert('Cart empty!');
-    
-    const pincode = prompt('Enter PINCODE (226001 Lucknow):');
-    if (!pincode || pincode.length !== 6) return alert('Valid PIN required');
-    
-    alert(`Order placed! 🚚 Shipping to ${pincode}\nTotal items: ${cartCount}`);
-    localStorage.clear(); // Clear cart
-    updateCartCount();
-}
-
