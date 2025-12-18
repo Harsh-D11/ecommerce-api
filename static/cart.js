@@ -1,12 +1,12 @@
 let cart = JSON.parse(localStorage.getItem('cart')) || {};
-let products = {};
 
 function loadProducts(data) {
-    products = data;
     const container = document.getElementById('products');
     container.innerHTML = '';
     
-    Object.entries(data).forEach(([id, product]) => {
+    Object.entries(data).forEach(function(id_product) {
+        let id = id_product[0];
+        let product = id_product[1];
         const card = `
             <div class="col-md-4 mb-4">
                 <div class="card product-card h-100">
@@ -31,24 +31,28 @@ function loadProducts(data) {
 }
 
 function addToCart(id) {
-    cart[id] = (cart[id] || 0) + 1;
+    if (!cart[id]) cart[id] = 0;
+    cart[id]++;
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
-    alert('Added to cart! 🛍️');
+    alert('Added to cart!');
 }
 
 function updateCartCount() {
-    const count = Object.values(cart).reduce((a,b)=>a+b, 0);
+    let count = 0;
+    for (let id in cart) {
+        count += cart[id];
+    }
     const badge = document.getElementById('cart-count');
-    if (badge) badge.textContent = count || 0;
+    if (badge) badge.textContent = count;
 }
 
 function buyNow(id) {
-    alert(`Buy Now clicked for ${products[id]?.name || id}! 💳\n(Full Razorpay needs API key)`);
+    alert('Buy Now clicked! 💳 Razorpay ready');
 }
 
 // Load products
 fetch('/api/products')
-    .then(r => r.json())
+    .then(function(r) { return r.json(); })
     .then(loadProducts)
-    .catch(e => console.error('Load failed:', e));
+    .catch(function(e) { console.error('Load failed:', e); });
