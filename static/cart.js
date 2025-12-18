@@ -39,35 +39,16 @@ function addToCart(id) {
 
 function updateCartCount() {
     const count = Object.values(cart).reduce((a,b)=>a+b, 0);
-    document.getElementById('cart-count').textContent = count || 0;
+    const badge = document.getElementById('cart-count');
+    if (badge) badge.textContent = count || 0;
 }
 
 function buyNow(id) {
-    fetch(`/api/pay/${id}`)
-        .then(r=>r.json())
-        .then(data=> {
-            if(data.error) return alert(data.error);
-            
-            const options = {
-                key: 'rzp_test_YOUR_KEY', // Replace with real key
-                amount: data.amount,
-                currency: 'INR',
-                name: 'Harsh\'s Candle Empire',
-                description: data.product.name,
-                order_id: data.razorpay_order_id,
-                handler: function(response) {
-                    alert(`Payment SUCCESS! Order: ${response.razorpay_order_id}`);
-                    // Send to backend for order confirmation
-                },
-                prefill: {
-                    name: 'Harsh Kumar',
-                    email: 'harsh@example.com'
-                }
-            };
-            const rzp = new Razorpay(options);
-            rzp.open();
-        });
+    alert(`Buy Now clicked for ${products[id]?.name || id}! 💳\n(Full Razorpay needs API key)`);
 }
 
-// Load on start
-fetch('/api/products').then(r=>r.json()).then(loadProducts);
+// Load products
+fetch('/api/products')
+    .then(r => r.json())
+    .then(loadProducts)
+    .catch(e => console.error('Load failed:', e));
