@@ -76,5 +76,10 @@ def api_products():
 def health():
     return jsonify({"status": "healthy", "user": session.get('user', 'guest')})
 
+@app.route('/cart')
+def cart_page():
+    return render_template('cart.html')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+
