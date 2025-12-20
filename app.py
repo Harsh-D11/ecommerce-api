@@ -8,7 +8,7 @@ import uuid
 app = Flask(__name__)
 app.secret_key = 'your-super-secret-key-change-this'
 
-# RAZORPAY - REPLACE WITH YOUR TEST KEYS
+# ⚠️ REPLACE WITH YOUR REAL RAZORPAY TEST KEYS
 client = Client(
     auth=("rzp_test_YOUR_KEY_ID_HERE", "YOUR_KEY_SECRET_HERE")
 )
@@ -63,7 +63,7 @@ def admin():
 @app.route('/create-order', methods=['POST'])
 def create_order():
     data = request.json
-    amount = int(data['amount']) * 100  # Convert to paisa
+    amount = int(data['amount']) * 100
     
     try:
         order = client.order.create({
@@ -86,19 +86,15 @@ def create_order():
 @app.route('/verify-payment', methods=['POST'])
 def verify_payment():
     data = request.json
-    # In production: verify Razorpay signature
-    order_id = data['order_id']
-    payment_id = data['payment_id']
     
-    # Save order to file (simple persistence)
     order_data = {
         'id': str(uuid.uuid4()),
-        'order_id': order_id,
-        'payment_id': payment_id,
+        'order_id': data['order_id'],
+        'payment_id': data['payment_id'],
         'amount': data['amount'],
         'customer': data['customer'],
         'items': data['items'],
-        'timestamp': str(random.randint(1000,9999))  # Demo timestamp
+        'timestamp': str(random.randint(1000,9999))
     }
     
     with open('orders.json', 'a') as f:
