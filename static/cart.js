@@ -1,5 +1,12 @@
 let cart = JSON.parse(localStorage.getItem('cart')) || {};
 
+// ✅ PRODUCTS DATA (Fixes RED X error)
+const PRODUCTS = {
+    "candle_rosemary": { "name": "🌿 Rosemary Aroma Candle", "price": 299, "image": "rosemary.jpg" },
+    "anime_goku": { "name": "⚡ Goku Anime Candle", "price": 399, "image": "goku.jpg" },
+    "aroma_lavender": { "name": "💜 Lavender Dream Candle", "price": 249, "image": "lavender.jpg" }
+};
+
 function loadProducts(data) {
     const container = document.getElementById('products');
     if (!container) return;
@@ -33,7 +40,8 @@ function addToCart(id) {
     cart[id]++;
     localStorage.setItem('cart', JSON.stringify(cart));
     updateCartCount();
-    alert(`Added! Cart now: ${Object.values(cart).reduce((a,b)=>a+b,0)} items`);
+    loadProducts(PRODUCTS);
+    alert(`Added! Cart: ${Object.values(cart).reduce((a,b)=>a+b,0)} items`);
 }
 
 function buyNow(id) {
@@ -50,7 +58,6 @@ function updateCartCount() {
     }
 }
 
-// Cart Page Functions
 function loadCartPage() {
     const itemsDiv = document.getElementById('cart-items');
     const emptyDiv = document.getElementById('empty-cart');
@@ -71,7 +78,7 @@ function loadCartPage() {
     let html = '';
     Object.entries(cart).forEach(([id, qty]) => {
         if (qty > 0) {
-            const product = PRODUCTS[id]; // Global products from app.py
+            const product = PRODUCTS[id];
             totalQty += qty;
             totalAmount += qty * product.price;
             
@@ -83,8 +90,8 @@ function loadCartPage() {
                         </div>
                         <div class="col-md-9">
                             <div class="card-body">
-                                <h5 class="card-title">${product.name}</h5>
-                                <p class="card-text">₹${product.price} x ${qty} = ₹${qty * product.price}</p>
+                                <h5>${product.name}</h5>
+                                <p>₹${product.price} x ${qty} = ₹${qty * product.price}</p>
                                 <div class="input-group w-50">
                                     <button class="btn btn-outline-secondary" onclick="updateQty('${id}', -1)">-</button>
                                     <input type="number" class="form-control" value="${qty}" readonly>
@@ -101,8 +108,6 @@ function loadCartPage() {
     itemsDiv.innerHTML = html;
     totalItems.textContent = totalQty;
     totalPrice.textContent = `₹${totalAmount}`;
-    
-    window.PRODUCTS = PRODUCTS; // Make global for cart page
 }
 
 function updateQty(id, change) {
@@ -131,4 +136,82 @@ function checkoutFromCart() {
     window.location.href = '/checkout';
 }
 
+// Checkout Page
+function loadCheckoutPage() {
+    const summaryDiv = document.getElementById('order-summary');
+    const totalAmount = document.getElementById('total-amount');
+    
+    let html = '<h6>Your Cart:</h6>';
+    let total = 0;
+    
+    Object.entries(cart).forEach(([id, qty]) => {
+        if (qty > 0) {
+            const product = PRODUCTS[id];
+            const itemTotal = qty * product.price;
+            total += itemTotal;
+            html += `<p>${product.name} x${qty} = ₹${itemTotal}</p>`;
+        }
+    });
+    
+    summaryDiv.innerHTML = html;
+    totalAmount.textContent = `₹${total}`;
+    window.CART_TOTAL = total;
+}
+
+function processCheckout() {
+    const form = document.getElementById('checkout-form');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    const customerData = {
+        name: document.getElementById('customer-name').value,
+        phone: document.getElementById('customer-phone').value,
+        address: document.getElementById('customer-address').value,
+        city: document.getElementById('customer-city').value,
+        state: document.getElementById('customer-state').value,
+        pincode: document.getElementById('customer-pincode').value
+    };
+    
+    initiatePayment(window.CART_TOTAL, customerData);
+}
+
+// Razorpay Payment
+function initiatePayment(amount, customerData = {}) {
+    const options = {
+        key: "rzp_test_YOUR_KEY_ID_HERE",  // ⚠️ REPLACE WITH YOUR KEY
+        amount: amount * 100,
+        currency: "INR",
+        name: "Harsh's Candle Empire",
+        description: "Premium Aroma Candles",
+        handler: function(response) {
+            verifyPayment(response, customerData);
+        },
+        prefill: {
+            name: customerData.name || "Customer",
+            contact: customerData.phone || "9999999999"
+        }
+    };
+    const rzp = new Razorpay(options);
+    rzp.open();
+}
+
+function verifyPayment(response, customerData) {
+    fetch('/verify-payment', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            order_id: response.razorpay_order_id,
+            payment_id: response.razorpay_payment_id,
+            amount: response.razorpay_amount,
+            customer: customerData,
+            items: cart
+        })
+    }).then(res => res.json())
+      .then(data => {
+          alert("✅ Order Confirmed! " + data.message);
+          clearCart();
+          window.location.href = '/';
+      });
 }
