@@ -128,6 +128,7 @@ function clearCart() {
 }
 
 function checkoutFromCart() {
-    const totalAmount = parseInt(document.getElementById('cart-total-price').textContent.replace('₹', ''));
-    initiatePayment(totalAmount);
+    window.location.href = '/checkout';
+}
+
 }
